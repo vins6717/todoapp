@@ -2,50 +2,38 @@ import React from "react";
 import Todos from "./Todos";
 import Header from "./Header";
 import AddTodo from "./AddTodo";
-import { v4 as uuidv4 } from 'uuid';
+
 
 class ToDoApp extends React.Component {
   constructor(props){
     super(props);
     this.state={
-      todos:[
-        {
-          id: uuidv4(),
-          title: "Setup development environment",
-          completed: false
-        }, 
-        {
-          id: uuidv4(),
-          title: "Develop website and add content",
-          completed: false
-        },
-        {
-          id: uuidv4(),
-          title: "Deploy to live server",
-          completed: false
-        } 
-      ]
+      todos:[] 
     };
 
     this.handleChange = this.handleChange.bind(this);
     this.deleteToDo = this.deleteToDo.bind(this);
     this.addTodo= this.addTodo.bind(this);
+    this.componentDidMount = this.componentDidMount.bind(this);
+    
     
   }
 
   addTodo(title) {
-    const newTodo = {
-      id: uuidv4(),
-      title: title,
-      completed: false
-    };
-    this.setState({
-      todos: [
-        ...this.state.todos,
-        newTodo
-      ]
-    });
-  }
+
+    const addToDo = { 
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: title })
+    }
+   fetch("https://jsonplaceholder.typicode.com/posts", addToDo)
+   .then(response => response.json())
+   .then(response => this.setState({
+     todos:[...this.state.todos, response]
+   }));
+
+  };
+  
 
  
 
@@ -61,14 +49,23 @@ class ToDoApp extends React.Component {
   };
 
   deleteToDo(id) {
-    this.setState({
+    fetch(`https://jsonplaceholder.typicode.com/todos/posts/${id}`, {
+      method: "DELETE"
+    }).then(response => response.json()).then(response => this.setState({
       todos: [
         ...this.state.todos.filter((todo) => {
           return todo.id !== id;
         })
       ]
-    });
+    }))
   };
+
+  componentDidMount() {
+   fetch("https://jsonplaceholder.typicode.com/todos?_limit=3")
+   .then(response => response.json())
+   .then(response => this.setState({todos: response}));
+  }
+ 
 
   render() {
     return (
